@@ -1,4 +1,4 @@
-module seavip-api-v2
+module odevleyici
 
 go 1.22.0
 

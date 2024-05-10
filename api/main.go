@@ -65,14 +65,75 @@ func main() {
 		w.Header().Set("Content-Type", "application/json")
 		fmt.Fprint(w, string(jsonData))
 	})
-	http.HandleFunc("/want-verify", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/verify", func(w http.ResponseWriter, r *http.Request) {
+		//read body jsonstring and convert to struct
+		type Student struct {
+			Name string `json:"ogr_name"`
+			ID   string `json:"ogr_id"`
+		}
+
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		var student Student
+		err = json.Unmarshal(body, &student)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		var code = GenerateVerifyCode()
+		//read ./codes.json
+		codesData, err := os.ReadFile("./codes.json")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		var codes map[string]string
+		err = json.Unmarshal(codesData, &codes)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		codes[student.ID] = code
+		//write ./codes.json
+		codesData, err = json.Marshal(codes)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		err = os.WriteFile("./codes.json", codesData, os.ModePerm)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		//target student.id+@mehmetakif.edu.tr
+		SendVerifyMail(student.ID+"@ogr.mehmetakif.edu.tr", code, student.Name)
+		fmt.Println("Sending mail to "+student.ID, " with code: "+code, " and name: "+student.Name)
 
 	})
-	http.HandleFunc("/verify", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/check", func(w http.ResponseWriter, r *http.Request) {
 		//get query params
 		code := r.URL.Query().Get("code")
-		if code == "" {
-
+		id := r.URL.Query().Get("id")
+		//read ./codes.json
+		codesData, err := os.ReadFile("./codes.json")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		var codes map[string]string
+		err = json.Unmarshal(codesData, &codes)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		if codes[id] == code {
+			fmt.Fprint(w, `{"msg":"OK"}`)
+		} else {
+			fmt.Fprint(w, `{"msg":"FAIL"}`)
 		}
 	})
 	http.HandleFunc("/odev", func(w http.ResponseWriter, r *http.Request) {
@@ -95,6 +156,37 @@ func main() {
 		ogrName := r.FormValue("ogr_name")
 		dersName := r.FormValue("ders_name")
 		verifyCode := r.FormValue("verify_code")
+		codesData, err := os.ReadFile("./codes.json")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		var codes map[string]string
+		err = json.Unmarshal(codesData, &codes)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		// fmt.Fprint(w, "json:"+codes[ogrID]+" form:"+verifyCode)
+		if codes[ogrID] != verifyCode {
+			http.Error(w, "Kod yanlis!", http.StatusUnauthorized)
+			return
+		} else {
+			fmt.Println("Kod dogru!")
+		}
+		//remove code from ./codes.json
+		delete(codes, ogrID)
+		codesData, err = json.Marshal(codes)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		err = os.WriteFile("./codes.json", codesData, os.ModePerm)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
 		//write files to ./public/ders_name_ogr_name_ogr_id/
 		for i := 0; i < len(odevFiles); i++ {
 			file, err := odevFiles[i].Open()
@@ -146,7 +238,7 @@ func main() {
 			next.ServeHTTP(w, r)
 		})
 	}
-	http.Handle("/", cors(http.FileServer(http.Dir("public"))))
+	http.Handle("/", cors(http.FileServer(http.Dir("../dist"))))
 	//file is exist
 	if _, err := os.Stat(CERT); os.IsNotExist(err) {
 		fmt.Println("CERT not fount! Server started at http://localhost:8080")

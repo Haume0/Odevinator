@@ -9,7 +9,7 @@ import (
 func GenerateVerifyCode() string {
 	rand.Seed(time.Now().UnixNano())
 	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	b := make([]byte, 10)
+	b := make([]byte, 6)
 	for i := range b {
 		b[i] = charset[rand.Intn(len(charset))]
 	}

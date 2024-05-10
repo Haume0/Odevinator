@@ -7,29 +7,27 @@ import (
 	"strings"
 )
 
-func SendVerifyMail(target string, id string, code string, name string) {
+func SendVerifyMail(target string, code string, name string) {
+	fmt.Println("Sending mail to "+target, " with code: "+code, " and name: "+name)
 	from := "haumewastaken@gmail.com"
 	password := "zduh hkqc cxwe zmjx"
 	to := []string{target}
 	smtpHost := "smtp.gmail.com"
 	smtpPort := "587"
 
-	var verifyURL = API + "/verify/"
 	templateData, err := os.ReadFile("./verify_en.html")
 	if err != nil {
 		panic(err)
 	}
 	template := string(templateData)
-	template = strings.ReplaceAll(template, "var_id", id)
 	template = strings.ReplaceAll(template, "var_code", code)
 	template = strings.ReplaceAll(template, "var_name", name)
-	template = strings.ReplaceAll(template, "var_url", verifyURL+code)
 
 	// Create MIME headers
 	headers := make(map[string]string)
 	headers["From"] = from
 	headers["To"] = strings.Join(to, ",")
-	headers["Subject"] = "Ödevini onaylamalısın!"
+	// headers["Subject"] = "Ödevini onaylamalısın!"
 	headers["MIME-version"] = "1.0"
 	headers["Content-Type"] = "text/html; charset=\"UTF-8\""
 
