@@ -120,10 +120,12 @@ function handleSumbit(e) {
                     <button
                       type="button"
                       onClick={() => setFiles(files.filter((_, i) => i !== index))}
-                      className="px-2 py-1 text-sm rounded-md bg-zinc-400 hover:bg-red-500 hover:text-white">
+                      className="px-2 py-1 text-sm rounded-md shrink-0 bg-zinc-400 hover:bg-red-500 hover:text-white">
                       Kaldır
                     </button>
-                    <span className="text-lg">{file.name}</span>
+                    <div className="overflow-hidden max-w-52 text-nowrap text-ellipsis">
+                    <span className="text-lg text-ellipsis">{file.name}</span>
+                    </div>
                   </div>
                 ))}
               </ul>

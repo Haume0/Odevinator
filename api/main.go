@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"os"
 
@@ -28,43 +29,8 @@ func main() {
 	PORT = os.Getenv("PORT")
 	KEY = os.Getenv("KEY")
 	CERT = os.Getenv("CERT")
-	fmt.Printf("API: %s\n SITE: %s\n PORT: %s\n", API, SITE, PORT)
+	// fmt.Printf("API: %s\n SITE: %s\n PORT: %s\n", API, SITE, PORT)
 
-	http.HandleFunc("/gallery", func(w http.ResponseWriter, r *http.Request) {
-		files, err := os.ReadDir("./public/gallery")
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		var folders map[string][]string
-		folders = make(map[string][]string)
-
-		for _, file := range files {
-			if file.IsDir() {
-				folderName := file.Name()
-				folderFiles, err := os.ReadDir("./public/gallery/" + folderName)
-				if err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-					return
-				}
-				var fileList []string
-				for _, folderFile := range folderFiles {
-					fileList = append(fileList, folderFile.Name())
-				}
-				folders[folderName] = fileList
-			}
-		}
-
-		jsonData, err := json.Marshal(folders)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprint(w, string(jsonData))
-	})
 	http.HandleFunc("/verify", func(w http.ResponseWriter, r *http.Request) {
 		//read body jsonstring and convert to struct
 		type Student struct {
@@ -238,10 +204,33 @@ func main() {
 			next.ServeHTTP(w, r)
 		})
 	}
-	http.Handle("/", cors(http.FileServer(http.Dir("../dist"))))
+	http.Handle("/", cors(http.FileServer(http.Dir("./dist"))))
+	//get local ipv4 adress 192.168.1.33 etc.
+	var ip net.IP
+	ifaces, err := net.Interfaces()
+	for idxx, i := range ifaces {
+		addrs, err := i.Addrs()
+		if err != nil {
+			println(err)
+		}
+		if idxx == 0 {
+			ip = addrs[1].(*net.IPNet).IP
+			println(ip.String())
+		}
+	}
+	//description
+	fmt.Printf(`
+✨Ödevinatör✨ by Haume
+
+🚀 Hazırız, aşağıdaki bağlantıyı öğrenciler
+ile paylaşabilirsiniz.
+
+⚠️ UYARI: AYNI WI-FI AĞINA BAĞLI OLMALISINIZ❗
+
+🔗 http://%v:8080`, ip)
 	//file is exist
 	if _, err := os.Stat(CERT); os.IsNotExist(err) {
-		fmt.Println("CERT not fount! Server started at http://localhost:8080")
+		// fmt.Println("CERT not fount! Server started at http://localhost:8080")
 		http.ListenAndServe(":8080", cors(http.DefaultServeMux))
 		return
 	}
