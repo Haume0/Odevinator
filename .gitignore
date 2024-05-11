@@ -24,3 +24,5 @@ dist-ssr
 *.sw?
 /api/public
 api/.env
+api/tmp/main.exe
+/api/tmp

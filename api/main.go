@@ -1,15 +1,12 @@
 package main
 
 import (
-	"bufio"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net"
 	"net/http"
 	"os"
-	"os/exec"
-	"strings"
 
 	"github.com/joho/godotenv"
 )
@@ -83,6 +80,8 @@ func main() {
 		}
 		//target student.id+@mehmetakif.edu.tr
 		SendVerifyMail(student.ID+OKUL_SUFFIX, code, student.Name)
+		fmt.Println("Sending mail to "+student.ID, " with code: "+code, " and name: "+student.Name)
+
 	})
 	http.HandleFunc("/check", func(w http.ResponseWriter, r *http.Request) {
 		//get query params
@@ -210,7 +209,6 @@ func main() {
 		})
 	}
 	http.Handle("/", cors(http.FileServer(http.Dir("./dist"))))
-	var link string
 	//get local ipv4 adress 192.168.1.33 etc.
 	var ip net.IP
 	ifaces, err := net.Interfaces()
@@ -221,37 +219,19 @@ func main() {
 		}
 		if idxx == 0 {
 			ip = addrs[1].(*net.IPNet).IP
-			link = "http://" + ip.String() + PORT
 			// println(ip.String())
 		}
 	}
-	if os.Args[len(os.Args)-1] == "--global" {
-		go func() {
-			cmd := exec.Command("ssh", "-R", "80:localhost:8080", "serveo.net")
-			cmd.Stderr = io.Discard
-			stdout, _ := cmd.StdoutPipe()
-			cmd.Start()
-
-			scanner := bufio.NewScanner(stdout)
-			scanner.Split(bufio.ScanLines)
-			for scanner.Scan() {
-				var globalUrl = strings.Replace(scanner.Text(), "Forwarding HTTP traffic from ", "", 1)
-				fmt.Printf(`
-	🔗 Global URL: %v`, globalUrl)
-			}
-			cmd.Wait()
-		}()
-	}
 	//description
 	fmt.Printf(`
-	✨Ödevinatör✨ by Haume
+✨Ödevinatör✨ by Haume
 
-	🚀 Hazırız, aşağıdaki bağlantıyı öğrenciler
-	ile paylaşabilirsiniz.
+🚀 Hazırız, aşağıdaki bağlantıyı öğrenciler
+ile paylaşabilirsiniz.
 
-	⚠️ UYARI: AYNI WI-FI AĞINA BAĞLI OLMALISINIZ❗
+⚠️ UYARI: AYNI WI-FI AĞINA BAĞLI OLMALISINIZ❗
 
-	🔗 %v`, link)
+🔗 http://%v:8080`, ip)
 	err = http.ListenAndServe(":8080", cors(http.DefaultServeMux))
 	if err != nil {
 		panic("ListenAndServeTLS: " + err.Error())

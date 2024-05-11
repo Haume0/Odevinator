@@ -3,9 +3,8 @@ import { useState } from "react";
 
 export function VerifyModal(props: { show: boolean; ogr_id:string; close: () => void; onVerify: (code: string) => void }) {
   const [code, setCode] = useState("");
-  const [url,setUrl] = useState(window.location.href);
   function handleVerify() {
-    fetch(`${url}/check?code=${code}&id=${props.ogr_id}`).then((res)=>res.json()).then((data)=>{
+    fetch(`http://localhost:8080/check?code=${code}&id=${props.ogr_id}`).then((res)=>res.json()).then((data)=>{
       if(data.msg != "OK"){
         alert("Doğrulama kodu yanlış!")
         return
