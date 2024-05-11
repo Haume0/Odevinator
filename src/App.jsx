@@ -10,9 +10,9 @@ function App() {
   const [verify, setVerify] = useState(false);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [url,setUrl] = useState(window.location.href);
   // number regex example 2314716027
   const nmbrgx = /^[0-9]{10}$/;
-
   function handleSumbit(e) {
     e.preventDefault();
     if (!nmbrgx.test(number)) {
@@ -31,7 +31,7 @@ function App() {
       alert("Lütfen adınızı giriniz.");
       return;
     }
-    fetch(`http://localhost:8080/verify`, {
+    fetch(`${url}/verify`, {
       method: "POST",
       headers: {
         "content-type": "application/json",
@@ -79,7 +79,7 @@ function App() {
     setLoading(false);
   };
 
-  xhr.open("POST", "http://localhost:8080/odev", true);
+  xhr.open("POST", `${url}/odev`, true);
 
   xhr.send(formData);
 }
