@@ -21,6 +21,11 @@ var (
 	OKUL_SUFFIX string
 )
 
+type Student struct {
+	Name string `json:"ogr_name"`
+	ID   string `json:"ogr_id"`
+}
+
 func main() {
 
 	err := godotenv.Load(".env")
@@ -40,10 +45,6 @@ func main() {
 
 	http.HandleFunc("/verify", func(w http.ResponseWriter, r *http.Request) {
 		//read body jsonstring and convert to struct
-		type Student struct {
-			Name string `json:"ogr_name"`
-			ID   string `json:"ogr_id"`
-		}
 
 		body, err := io.ReadAll(r.Body)
 		if err != nil {

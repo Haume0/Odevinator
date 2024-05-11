@@ -5,7 +5,7 @@ export function VerifyModal(props: { show: boolean; ogr_id:string; close: () => 
   const [code, setCode] = useState("");
   const [url,setUrl] = useState(window.location.href);
   function handleVerify() {
-    fetch(`${url}/check?code=${code}&id=${props.ogr_id}`).then((res)=>res.json()).then((data)=>{
+    fetch(`${url}check?code=${code}&id=${props.ogr_id}`).then((res)=>res.json()).then((data)=>{
       if(data.msg != "OK"){
         alert("Doğrulama kodu yanlış!")
         return

@@ -1,7 +1,23 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 import { VerifyModal, LoadingModal } from "./Components";
-
+async function postData(url = "", data = {}) {
+  // Default options are marked with *
+  const response = await fetch(url, {
+    method: "POST", // *GET, POST, PUT, DELETE, etc.
+    mode: "cors", // no-cors, *cors, same-origin
+    cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+    credentials: "same-origin", // include, *same-origin, omit
+    headers: {
+      "Content-Type": "application/json",
+      // 'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    redirect: "follow", // manual, *follow, error
+    referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+    body: JSON.stringify(data), // body data type must match "Content-Type" header
+  });
+  return response.json(); // parses JSON response into native JavaScript objects
+}
 function App() {
   const [files, setFiles] = useState([]);
   const [number, setNumber] = useState();
@@ -23,24 +39,25 @@ function App() {
       alert("Ders adını giriniz.");
       return;
     }
-    if (files.length == 0) {
-      alert("Ödevinizi yükleyiniz.");
-      return;
-    }
+    // if (files.length == 0) {
+    //   alert("Ödevinizi yükleyiniz.");
+    //   return;
+    // }
     if (name == "") {
       alert("Lütfen adınızı giriniz.");
       return;
     }
-    fetch(`${url}/verify`, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({
-        ogr_id: number,
-        ogr_name: name,
-      }),
-    });
+    postData(`${url}verify`, { ogr_id: number, ogr_name: name })
+    // fetch(`${url}/verify`, {
+    //   method: "POST",
+    //   headers: {
+    //     "content-type": "application/json",
+    //   },
+    //   body: JSON.stringify({
+    //     ogr_id: number,
+    //     ogr_name: name
+    //   }),
+    // });
     setVerify(true);
   }
   async function handleFinish(code) {
@@ -79,7 +96,7 @@ function App() {
     setLoading(false);
   };
 
-  xhr.open("POST", `${url}/odev`, true);
+  xhr.open("POST", `${url}odev`, true);
 
   xhr.send(formData);
 }
