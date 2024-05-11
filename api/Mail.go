@@ -8,13 +8,9 @@ import (
 )
 
 func SendVerifyMail(target string, code string, name string) {
-	// fmt.Printf(`
-	// MAIL_SUFFIX: %v
-	// MAIL: %v
-	// PASS: %v`, OKUL_SUFFIX, MAIL, PASS)
 	fmt.Println("Sending mail to "+target, " with code: "+code, " and name: "+name)
-	from := MAIL
-	password := PASS
+	from := "haumewastaken@gmail.com"
+	password := "zduh hkqc cxwe zmjx"
 	to := []string{target}
 	smtpHost := "smtp.gmail.com"
 	smtpPort := "587"
