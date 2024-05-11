@@ -53,13 +53,19 @@ export function VerifyModal(props: { show: boolean; ogr_id:string; close: () => 
   );
 }
 
-export function LoadingModal(props: { show: boolean }) {
+export function LoadingModal(props: { show: boolean,progress: number}) {
   return(
     <>
       {props.show && (
         <div className=" fixed bg-black/60 backdrop-blur-sm w-screen flex items-center justify-center h-[100svh] inset-0">
           <section className="w-[32rem] p-12 bg-white items-center justify-center rounded-xl flex flex-col gap-4">
-            <img src="/spinner.gif" className="size-24" alt="" />
+            {props.progress == 0 ? (
+              <img src="/spinner.gif" className="size-24" alt="" />
+            ):(
+              <div className="relative w-full h-4 bg-gray-200 rounded-full">
+                <div className="absolute h-full bg-blue-500 rounded-full" style={{width: `${props.progress}%`}}></div>
+              </div>
+            )}
             <h1 className="text-3xl font-bold">Lütfen bekleyin...</h1>
             <p className="font-medium">
               Yüklediğiniz dosyaya göre bu işlem biraz zaman alabilir.

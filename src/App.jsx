@@ -1,72 +1,114 @@
 import { useEffect, useState } from "react";
 import "./App.css";
-import { VerifyModal,LoadingModal } from "./Components";
+import { VerifyModal, LoadingModal } from "./Components";
 
 function App() {
   const [files, setFiles] = useState([]);
-  const [number,setNumber] = useState();
-  const [ders,setDers] = useState();
-  const [name,setName] = useState()
-  const [verify,setVerify] = useState(false)
-  const [loading,setLoading] = useState(false)
+  const [number, setNumber] = useState();
+  const [ders, setDers] = useState();
+  const [name, setName] = useState();
+  const [verify, setVerify] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
   // number regex example 2314716027
-  const nmbrgx = /^[0-9]{10}$/
+  const nmbrgx = /^[0-9]{10}$/;
 
-function handleSumbit(e) {
+  function handleSumbit(e) {
     e.preventDefault();
-    if(!nmbrgx.test(number)){
-      alert("Girdiğiniz okul numarası geçersiz.")
-      return
+    if (!nmbrgx.test(number)) {
+      alert("Girdiğiniz okul numarası geçersiz.");
+      return;
     }
-    if(ders == ""){
-      alert("Ders adını giriniz.")
-      return
+    if (ders == "") {
+      alert("Ders adını giriniz.");
+      return;
     }
-    if(files.length == 0){
-      alert('Ödevinizi yükleyiniz.')
-      return
+    if (files.length == 0) {
+      alert("Ödevinizi yükleyiniz.");
+      return;
     }
-    if(name == ""){
-      alert("Lütfen adınızı giriniz.")
-      return
+    if (name == "") {
+      alert("Lütfen adınızı giriniz.");
+      return;
     }
-    fetch(`http://localhost:8080/verify`,{
-      method: 'POST',
+    fetch(`http://localhost:8080/verify`, {
+      method: "POST",
       headers: {
-        "content-type": "application/json"
+        "content-type": "application/json",
       },
       body: JSON.stringify({
         ogr_id: number,
-        ogr_name: name
-      })
-    })
-    setVerify(true)
+        ogr_name: name,
+      }),
+    });
+    setVerify(true);
   }
-  async function handleFinish(code){
-    const formData = new FormData();
-    for (let i = 0; i < files.length; i++) {
-      formData.append("odev_files", files[i]);
-    }
-    formData.append("ogr_id", number);
-    formData.append("ogr_name", name);
-    formData.append("ders_name", ders);
-    formData.append("verify_code",code)
-    setLoading(true)
-    const res = await fetch('http://localhost:8080/odev',{
-      method: 'POST',
-      body: formData
-    })
-    if(res.status == 200){
-      alert("Ödev başarıyla yüklendi.")
-      setFiles([])
-      setNumber("")
-      setDers("")
-      setName("")
-    }else{
-      alert("Bir hata oluştu.")
-    }
-    setLoading(false)
+  async function handleFinish(code) {
+  const formData = new FormData();
+  for (let i = 0; i < files.length; i++) {
+    formData.append("odev_files", files[i]);
   }
+  formData.append("ogr_id", number);
+  formData.append("ogr_name", name);
+  formData.append("ders_name", ders);
+  formData.append("verify_code", code);
+  setLoading(true);
+
+  const xhr = new XMLHttpRequest();
+
+  xhr.upload.onprogress = function (event) {
+    // console.log(`Yüklenen: ${event.loaded} / ${event.total}`);
+    setProgress((event.loaded / event.total) * 100);
+  };
+
+  xhr.onload = function() {
+    if (xhr.status == 200) {
+      alert("Ödev başarıyla yüklendi.");
+      setFiles([]);
+      setNumber("");
+      setDers("");
+      setName("");
+    } else {
+      alert("Bir hata oluştu.");
+    }
+    setLoading(false);
+  };
+
+  xhr.onerror = function() {
+    alert("Bir hata oluştu.");
+    setLoading(false);
+  };
+
+  xhr.open("POST", "http://localhost:8080/odev", true);
+
+  xhr.send(formData);
+}
+  // async function handleFinish(code) {
+  //   const formData = new FormData();
+  //   for (let i = 0; i < files.length; i++) {
+  //     formData.append("odev_files", files[i]);
+  //   }
+  //   formData.append("ogr_id", number);
+  //   formData.append("ogr_name", name);
+  //   formData.append("ders_name", ders);
+  //   formData.append("verify_code", code);
+  //   setLoading(true);
+  //   const res = await fetch("http://localhost:8080/odev", {
+  //     method: "POST",
+  //     body: formData,
+  //   });
+  //   // upload progress
+  //   if (res.status == 200) {
+  //     alert("Ödev başarıyla yüklendi.");
+  //     setFiles([]);
+  //     setNumber("");
+  //     setDers("");
+  //     setName("");
+  //   } else {
+  //     alert("Bir hata oluştu.");
+  //   }
+  //   setLoading(false);
+  // }
   return (
     <>
       <div className="max-w-[100vw] flex flex-col gap-2 items-center justify-center p-4 md:max-w-[32rem]">
@@ -77,9 +119,12 @@ function handleSumbit(e) {
         <h4 className="text-xl font-medium">
           Ödevini aşağıdan yükleyebilirsin.
         </h4>
-        <form action="" onSubmit={handleSumbit} className="flex flex-col w-full gap-4">
+        <form
+          action=""
+          onSubmit={handleSumbit}
+          className="flex flex-col w-full gap-4">
           <div className="flex flex-col gap-2 mt-4">
-          <input
+            <input
               type="text"
               className={`bg-zinc-200 h-12 rounded-xl px-2 py-2 outline-none focus:border-blue-500 border-2 border-transparent ease-in-out duration-200`}
               placeholder="Ders adı"
@@ -89,7 +134,9 @@ function handleSumbit(e) {
             <input
               type="text"
               inputMode="numeric"
-              className={`bg-zinc-200 h-12 rounded-xl px-2 py-2 outline-none focus:border-blue-500 border-2 border-transparent ease-in-out duration-200 ${(!nmbrgx.test(number) && number>0) ? "!border-red-500" : ""}`}
+              className={`bg-zinc-200 h-12 rounded-xl px-2 py-2 outline-none focus:border-blue-500 border-2 border-transparent ease-in-out duration-200 ${
+                !nmbrgx.test(number) && number > 0 ? "!border-red-500" : ""
+              }`}
               placeholder="Öğrenci numarası"
               value={number}
               onInput={(e) => setNumber(e.target.value)}
@@ -119,12 +166,14 @@ function handleSumbit(e) {
                   <div key={index} className="flex gap-1">
                     <button
                       type="button"
-                      onClick={() => setFiles(files.filter((_, i) => i !== index))}
+                      onClick={() =>
+                        setFiles(files.filter((_, i) => i !== index))
+                      }
                       className="px-2 py-1 text-sm rounded-md shrink-0 bg-zinc-400 hover:bg-red-500 hover:text-white">
                       Kaldır
                     </button>
                     <div className="overflow-hidden max-w-52 text-nowrap text-ellipsis">
-                    <span className="text-lg text-ellipsis">{file.name}</span>
+                      <span className="text-lg text-ellipsis">{file.name}</span>
                     </div>
                   </div>
                 ))}
@@ -135,10 +184,24 @@ function handleSumbit(e) {
             Gönder
           </button>
         </form>
-        <a href="https://bento.me/haume" target="_blank" className="mt-2 text-sm font-medium text-zinc-500">by Emin Erçoban <span className="text-[10px]">aka</span>Haume</a>
+        <a
+          href="https://bento.me/haume"
+          target="_blank"
+          className="mt-2 text-sm font-medium text-zinc-500">
+          by Emin Erçoban <span className="text-[10px]">aka</span>Haume
+        </a>
       </div>
-      <VerifyModal ogr_id={number} close={()=>{setVerify(false)}} show={verify} onVerify={(code)=>{handleFinish(code)}} />
-      <LoadingModal show={loading} />
+      <VerifyModal
+        ogr_id={number}
+        close={() => {
+          setVerify(false);
+        }}
+        show={verify}
+        onVerify={(code) => {
+          handleFinish(code);
+        }}
+      />
+      <LoadingModal show={loading} progress={progress} />
     </>
   );
 }
