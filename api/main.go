@@ -11,11 +11,12 @@ import (
 	"github.com/joho/godotenv"
 )
 
-var SITE = "http://0.0.0.0:80"
-var API = "http://0.0.0.0:8080"
-var PORT = ":8080"
-var KEY = ""
-var CERT = ""
+var (
+	PORT        = ":8080"
+	PASS        string
+	MAIL        string
+	OKUL_SUFFIX string
+)
 
 func main() {
 
@@ -24,12 +25,15 @@ func main() {
 		fmt.Print("!!!Error loading .env file!!!")
 		return
 	}
-	SITE = os.Getenv("SITE")
-	API = os.Getenv("API")
-	PORT = os.Getenv("PORT")
-	KEY = os.Getenv("KEY")
-	CERT = os.Getenv("CERT")
-	// fmt.Printf("API: %s\n SITE: %s\n PORT: %s\n", API, SITE, PORT)
+	PASS = os.Getenv("PASS")
+	MAIL = os.Getenv("MAIL")
+	OKUL_SUFFIX = os.Getenv("OKUL_SUFFIX")
+	if os.Args[len(os.Args)-1] == "--dev" {
+		fmt.Printf(`
+		MAIL_SUFFIX: %v
+		MAIL: %v
+		PASS: %v`, OKUL_SUFFIX, MAIL, PASS)
+	}
 
 	http.HandleFunc("/verify", func(w http.ResponseWriter, r *http.Request) {
 		//read body jsonstring and convert to struct
@@ -75,7 +79,7 @@ func main() {
 			return
 		}
 		//target student.id+@mehmetakif.edu.tr
-		SendVerifyMail(student.ID+"@ogr.mehmetakif.edu.tr", code, student.Name)
+		SendVerifyMail(student.ID+OKUL_SUFFIX, code, student.Name)
 		fmt.Println("Sending mail to "+student.ID, " with code: "+code, " and name: "+student.Name)
 
 	})
@@ -215,7 +219,7 @@ func main() {
 		}
 		if idxx == 0 {
 			ip = addrs[1].(*net.IPNet).IP
-			println(ip.String())
+			// println(ip.String())
 		}
 	}
 	//description
@@ -228,14 +232,7 @@ ile paylaşabilirsiniz.
 ⚠️ UYARI: AYNI WI-FI AĞINA BAĞLI OLMALISINIZ❗
 
 🔗 http://%v:8080`, ip)
-	//file is exist
-	if _, err := os.Stat(CERT); os.IsNotExist(err) {
-		// fmt.Println("CERT not fount! Server started at http://localhost:8080")
-		http.ListenAndServe(":8080", cors(http.DefaultServeMux))
-		return
-	}
-
-	err = http.ListenAndServeTLS(":8443", CERT, KEY, cors(http.DefaultServeMux))
+	err = http.ListenAndServe(":8080", cors(http.DefaultServeMux))
 	if err != nil {
 		panic("ListenAndServeTLS: " + err.Error())
 	}
