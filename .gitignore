@@ -25,3 +25,4 @@ dist-ssr
 /api/public
 api/.env
 /api/tmp
+/api/odevler
