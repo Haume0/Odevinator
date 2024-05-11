@@ -153,7 +153,7 @@ func main() {
 			return
 		}
 
-		//write files to ./public/ders_name_ogr_name_ogr_id/
+		//write files to ./odevler/ders_name_ogr_name_ogr_id/
 		for i := 0; i < len(odevFiles); i++ {
 			file, err := odevFiles[i].Open()
 			if err != nil {
@@ -161,12 +161,12 @@ func main() {
 				return
 			}
 			defer file.Close()
-			err = os.MkdirAll("./public/"+dersName+"_"+ogrName+"_"+ogrID, os.ModePerm)
+			err = os.MkdirAll("./odevler/"+dersName+"_"+ogrName+"_"+ogrID, os.ModePerm)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-			targetFile, err := os.Create("./public/" + dersName + "_" + ogrName + "_" + ogrID + "/" + odevFiles[i].Filename)
+			targetFile, err := os.Create("./odevler/" + dersName + "_" + ogrName + "_" + ogrID + "/" + odevFiles[i].Filename)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
