@@ -33,7 +33,7 @@ export function VerifyModal(props: { show: boolean; ogr_id:string; close: () => 
               className={`bg-zinc-200 h-12 text-center rounded-xl px-4 py-2 outline-none focus:border-blue-500 border-2 border-transparent ease-in-out duration-200`}
               placeholder="Doğrulama kodu"
               value={code}
-              onInput={(e) => setCode(e.target.value)}
+              onInput={(e: React.ChangeEvent<HTMLInputElement>) => setCode(e.target.value)}
             />
             <div className="flex w-full gap-4">
               <button

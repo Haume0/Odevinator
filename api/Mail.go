@@ -7,18 +7,30 @@ import (
 	"strings"
 )
 
-func SendVerifyMail(target string, code string, name string) {
-	// fmt.Printf(`
-	// MAIL_SUFFIX: %v
-	// MAIL: %v
-	// PASS: %v`, OKUL_SUFFIX, MAIL, PASS)
-	fmt.Println("Sending mail to "+target, " with code: "+code, " and name: "+name)
+var first bool = true
+
+func SendVerifyMail(target string, id, code string, name string) {
+	// for the offline situations
+
+	fmt.Println("")
+
+	if first {
+
+		fmt.Println(`
+	İnternet bağlantısı yoksa kodu öğrenciye siz söylemelisiniz.`)
+
+		first = false
+	}
+
+	fmt.Printf(`
+	💯 %v • %v: ✅ %v ✅`, id, name, code)
+	//smpt values
 	from := MAIL
 	password := PASS
 	to := []string{target}
 	smtpHost := "smtp.gmail.com"
 	smtpPort := "587"
-
+	//the content of the email
 	templateData, err := os.ReadFile("./verify_en.html")
 	if err != nil {
 		panic(err)
@@ -27,7 +39,7 @@ func SendVerifyMail(target string, code string, name string) {
 	template = strings.ReplaceAll(template, "var_code", code)
 	template = strings.ReplaceAll(template, "var_name", name)
 
-	// Create MIME headers
+	// Creating MIME headers
 	headers := make(map[string]string)
 	headers["From"] = from
 	headers["To"] = strings.Join(to, ",")
@@ -35,17 +47,17 @@ func SendVerifyMail(target string, code string, name string) {
 	headers["MIME-version"] = "1.0"
 	headers["Content-Type"] = "text/html; charset=\"UTF-8\""
 
-	// Create the email body
+	// Creating the email body
 	message := ""
 	for k, v := range headers {
 		message += fmt.Sprintf("%s: %s\r\n", k, v)
 	}
 	message += "\r\n" + template
 
-	// Create authentication
+	// Creating for authentication
 	auth := smtp.PlainAuth("", from, password, smtpHost)
 
-	// Send actual message
+	// Sending the email
 	err = smtp.SendMail(smtpHost+":"+smtpPort, auth, from, to, []byte(message))
 	if err != nil {
 		panic(err)

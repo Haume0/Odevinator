@@ -27,6 +27,9 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [url,setUrl] = useState(window.location.href);
+  if(localStorage.getItem("CLIENT_ID") == null){
+    localStorage.setItem("CLIENT_ID", Math.random().toString(36).substring(2, 15))
+  }
   // number regex example 2314716027
   const nmbrgx = /^[0-9]{10}$/;
   function handleSumbit(e) {
@@ -39,26 +42,19 @@ function App() {
       alert("Ders adını giriniz.");
       return;
     }
-    // if (files.length == 0) {
-    //   alert("Ödevinizi yükleyiniz.");
-    //   return;
-    // }
     if (name == "") {
       alert("Lütfen adınızı giriniz.");
       return;
     }
-    postData(`${url}verify`, { ogr_id: number, ogr_name: name })
-    // fetch(`${url}/verify`, {
-    //   method: "POST",
-    //   headers: {
-    //     "content-type": "application/json",
-    //   },
-    //   body: JSON.stringify({
-    //     ogr_id: number,
-    //     ogr_name: name
-    //   }),
-    // });
+    postData(`${url}verify`, { ogr_id: number, ogr_name: name, client_id: (localStorage.getItem("CLIENT_ID") || "HATA") })
     setVerify(true);
+    if(localStorage.getItem("POSTS") == null){
+      localStorage.setItem("POSTS", JSON.stringify([{ogr_id:number,ogr_name:name}])) 
+    }else{
+      const posts = JSON.parse(localStorage.getItem("POSTS"))
+      posts.push({ogr_id:number,ogr_name:name})
+      localStorage.setItem("POSTS", JSON.stringify(posts))
+    }
   }
   async function handleFinish(code) {
   const formData = new FormData();
@@ -74,7 +70,6 @@ function App() {
   const xhr = new XMLHttpRequest();
 
   xhr.upload.onprogress = function (event) {
-    // console.log(`Yüklenen: ${event.loaded} / ${event.total}`);
     setProgress((event.loaded / event.total) * 100);
   };
 
@@ -100,32 +95,6 @@ function App() {
 
   xhr.send(formData);
 }
-  // async function handleFinish(code) {
-  //   const formData = new FormData();
-  //   for (let i = 0; i < files.length; i++) {
-  //     formData.append("odev_files", files[i]);
-  //   }
-  //   formData.append("ogr_id", number);
-  //   formData.append("ogr_name", name);
-  //   formData.append("ders_name", ders);
-  //   formData.append("verify_code", code);
-  //   setLoading(true);
-  //   const res = await fetch("http://localhost:8080/odev", {
-  //     method: "POST",
-  //     body: formData,
-  //   });
-  //   // upload progress
-  //   if (res.status == 200) {
-  //     alert("Ödev başarıyla yüklendi.");
-  //     setFiles([]);
-  //     setNumber("");
-  //     setDers("");
-  //     setName("");
-  //   } else {
-  //     alert("Bir hata oluştu.");
-  //   }
-  //   setLoading(false);
-  // }
   return (
     <>
       <div className="max-w-[100vw] flex flex-col gap-2 items-center justify-center p-4 md:max-w-[32rem]">
