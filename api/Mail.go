@@ -12,18 +12,17 @@ var first bool = true
 func SendVerifyMail(target string, id, code string, name string) {
 	// for the offline situations
 
-	fmt.Println("")
-
 	if first {
 
-		fmt.Println(`
-	İnternet bağlantısı yoksa kodu öğrenciye siz söylemelisiniz.`)
+		fmt.Println("\n⚠️ İnternet bağlantısı yoksa kodu öğrenciye siz söylemelisiniz.🌐")
 
 		first = false
 	}
-
-	fmt.Printf(`
-	💯 %v • %v: ✅ %v ✅`, id, name, code)
+	fmt.Printf("\r")
+	fmt.Printf("\n💯 %v • %v: ✅ %v ✅", id, name, code)
+	if PASS == "your smtp keyy here" {
+		return
+	}
 	//smpt values
 	from := MAIL
 	password := PASS

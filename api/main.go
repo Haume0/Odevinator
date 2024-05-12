@@ -296,15 +296,20 @@ func main() {
 	//get local ipv4 adress 192.168.1.33 etc.
 	var ip net.IP
 	ifaces, err := net.Interfaces()
-	for idxx, i := range ifaces {
-		addrs, err := i.Addrs()
-		if err != nil {
-			println(err)
-		}
-		if idxx == 0 {
-			ip = addrs[1].(*net.IPNet).IP
-			link = "http://" + ip.String() + PORT
-			// println(ip.String())
+	for _, i := range ifaces {
+		if i.Name == "Ethernet" {
+			addrs, err := i.Addrs()
+			if err != nil {
+				println(err)
+			}
+			for _, addr := range addrs {
+				if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() && ipnet.IP.To4() != nil {
+					ip = ipnet.IP
+					link = "http://" + ip.String() + PORT
+					break
+				}
+			}
+			break
 		}
 	}
 	// If --global flag is set, create a tunnel and get the global URL
@@ -331,8 +336,10 @@ func main() {
 				// to get the global URL
 				var globalUrl = strings.Replace(scanner.Text(), "Forwarding HTTP traffic from ", "", 1)
 				// Print the global URL
-				fmt.Printf(`
-	🔗 Global URL: %v`, globalUrl)
+				fmt.Printf("🔗 Global URL: %v \n", globalUrl)
+				//clearing all cli styling
+				fmt.Printf("\033[0m") // ANSI renk kodlarını sıfırla
+				fmt.Printf("\r")      // Satırı temizle
 				break
 			}
 			// Wait for the command to finish
@@ -341,14 +348,15 @@ func main() {
 	}
 	//description
 	fmt.Printf(`
-	✨Ödevinatör✨ by Haume
+✨Ödevinatör✨ by Haume
 
-	🚀 Hazırız, aşağıdaki bağlantıyı öğrenciler
-	ile paylaşabilirsiniz.
+🚀 Hazırız, aşağıdaki bağlantıyı öğrenciler
+ile paylaşabilirsiniz.
 
-	⚠️ UYARI: AYNI WI-FI AĞINA BAĞLI OLMALISINIZ❗
+⚠️ UYARI: AYNI WI-FI AĞINA BAĞLI OLMALISINIZ❗
 
-	🔗 %v`, link)
+🔗 %v
+`, link)
 	err = http.ListenAndServe(":8080", cors(http.DefaultServeMux))
 	if err != nil {
 		panic("ListenAndServeTLS: " + err.Error())
