@@ -28,3 +28,4 @@ api/.env
 /api/odevler
 api/codes.json
 api/log.json
+api/odevleyici.exe
