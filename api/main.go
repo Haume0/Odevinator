@@ -227,23 +227,21 @@ func main() {
 		if codes[ogrID] != verifyCode {
 			http.Error(w, "Kod yanlis!", http.StatusUnauthorized)
 			return
-		} else {
-			fmt.Println("Kod dogru!")
 		}
 		// Remove the code from the codes.json file
-		delete(codes, ogrID)
+		// delete(codes, ogrID)
 		// Marshal the updated codes map back into JSON
-		codesData, err = json.Marshal(codes)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		// Write the updated codes.json file
-		err = os.WriteFile("./codes.json", codesData, os.ModePerm)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+		// codesData, err = json.Marshal(codes)
+		// if err != nil {
+		// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+		// 	return
+		// }
+		// // Write the updated codes.json file
+		// err = os.WriteFile("./codes.json", codesData, os.ModePerm)
+		// if err != nil {
+		// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+		// 	return
+		// }
 
 		// Write files to ./odevler/ders_name_ogr_name_ogr_id/
 		for i := 0; i < len(odevFiles); i++ {
