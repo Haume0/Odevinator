@@ -291,27 +291,44 @@ func main() {
 	}
 	// Serve Website
 	http.Handle("/", cors(http.FileServer(http.Dir("./dist"))))
-	// Get local IPv4 address
-	var link string
-	//get local ipv4 adress 192.168.1.33 etc.
-	var ip net.IP
+	//get local router network ip adress ethernet if ethernet is not available get the wifi ip adress
 	ifaces, err := net.Interfaces()
+	if err != nil {
+		panic("Unable to get network interfaces: " + err.Error())
+	}
+	var ip string
 	for _, i := range ifaces {
-		if i.Name == "Ethernet" {
+		if strings.Contains(i.Name, "Ethernet") {
 			addrs, err := i.Addrs()
 			if err != nil {
-				println(err)
+				panic("Unable to get addresses for interface " + i.Name + ": " + err.Error())
 			}
 			for _, addr := range addrs {
-				if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() && ipnet.IP.To4() != nil {
-					ip = ipnet.IP
-					link = "http://" + ip.String() + PORT
+				if strings.Contains(addr.String(), ".") {
+					ip = strings.Split(addr.String(), "/")[0]
 					break
 				}
 			}
-			break
 		}
 	}
+	if ip == "" {
+		for _, i := range ifaces {
+			if strings.Contains(i.Name, "Wi-Fi") {
+				addrs, err := i.Addrs()
+				if err != nil {
+					panic("Unable to get addresses for interface " + i.Name + ": " + err.Error())
+				}
+				for _, addr := range addrs {
+					if strings.Contains(addr.String(), ".") {
+						ip = strings.Split(addr.String(), "/")[0]
+						break
+					}
+				}
+			}
+		}
+	}
+	// Create a link with the local IP address and the port
+	link := "http://" + ip + PORT
 	// If --global flag is set, create a tunnel and get the global URL
 	if os.Args[len(os.Args)-1] == "--global" {
 		go func() {
