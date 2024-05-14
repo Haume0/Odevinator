@@ -8,13 +8,16 @@ export function VerifyModal(props: { show: boolean; ogr_id:string; close: () => 
     fetch(`${url}check?code=${code}&id=${props.ogr_id}`).then((res)=>res.json()).then((data)=>{
       if(data.msg != "OK"){
         alert("Doğrulama kodu yanlış!")
+        setCode('');
         return
       }
       alert('Kod doğru!')
+      setCode('');
       props.onVerify(code);
       props.close();
     }).catch((err)=>{
       console.log(err)
+      setCode('');
       alert('Bir sorunla karşılaştık!')
     })
   }

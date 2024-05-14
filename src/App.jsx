@@ -76,7 +76,6 @@ function App() {
   xhr.onload = function() {
     if (xhr.status == 200) {
       alert("Ödev başarıyla yüklendi.");
-      setFiles([]);
       setNumber("");
       setDers("");
       setName("");

@@ -30,6 +30,16 @@ type Student struct {
 }
 
 func main() {
+	var input string
+	//get input from user
+	fmt.Println("\nSistemi internet üzerinden erişilir hale getirir.")
+	fmt.Println("\n⚠️ İNTERNET BAĞLANTISI GEREKLİDİR.")
+	fmt.Print("\n🌐 Global URL ister misiniz? [yes/no]: ")
+	fmt.Scanln(&input)
+	//if input is yes, set the --global flag
+	if input == "yes" {
+		os.Args = append(os.Args, "--global")
+	}
 	// ENV VARS
 	err := godotenv.Load(".env")
 	if err != nil {
@@ -291,44 +301,7 @@ func main() {
 	}
 	// Serve Website
 	http.Handle("/", cors(http.FileServer(http.Dir("./dist"))))
-	//get local router network ip adress ethernet if ethernet is not available get the wifi ip adress
-	ifaces, err := net.Interfaces()
-	if err != nil {
-		panic("Unable to get network interfaces: " + err.Error())
-	}
-	var ip string
-	for _, i := range ifaces {
-		if strings.Contains(i.Name, "Ethernet") {
-			addrs, err := i.Addrs()
-			if err != nil {
-				panic("Unable to get addresses for interface " + i.Name + ": " + err.Error())
-			}
-			for _, addr := range addrs {
-				if strings.Contains(addr.String(), ".") {
-					ip = strings.Split(addr.String(), "/")[0]
-					break
-				}
-			}
-		}
-	}
-	if ip == "" {
-		for _, i := range ifaces {
-			if strings.Contains(i.Name, "Wi-Fi") {
-				addrs, err := i.Addrs()
-				if err != nil {
-					panic("Unable to get addresses for interface " + i.Name + ": " + err.Error())
-				}
-				for _, addr := range addrs {
-					if strings.Contains(addr.String(), ".") {
-						ip = strings.Split(addr.String(), "/")[0]
-						break
-					}
-				}
-			}
-		}
-	}
-	// Create a link with the local IP address and the port
-	link := "http://" + ip + PORT
+
 	// If --global flag is set, create a tunnel and get the global URL
 	if os.Args[len(os.Args)-1] == "--global" {
 		go func() {
@@ -353,7 +326,8 @@ func main() {
 				// to get the global URL
 				var globalUrl = strings.Replace(scanner.Text(), "Forwarding HTTP traffic from ", "", 1)
 				// Print the global URL
-				fmt.Printf("🔗 Global URL: %v \n", globalUrl)
+				fmt.Println("")
+				fmt.Printf("🌐 Global URL: %v\n", globalUrl)
 				//clearing all cli styling
 				fmt.Printf("\033[0m") // ANSI renk kodlarını sıfırla
 				fmt.Printf("\r")      // Satırı temizle
@@ -370,10 +344,25 @@ func main() {
 🚀 Hazırız, aşağıdaki bağlantıyı öğrenciler
 ile paylaşabilirsiniz.
 
-⚠️ UYARI: AYNI WI-FI AĞINA BAĞLI OLMALISINIZ❗
-
-🔗 %v
-`, link)
+⚠️ UYARI: AYNI WI-FI AĞINA BAĞLI OLMALISINIZ 🛜
+`)
+	//get local router network ip adress ethernet and wifi and print them like 🔗 http://adress:8080
+	// Get the local IP address of the machine
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		panic(err)
+	}
+	// Loop through the addresses
+	for _, addr := range addrs {
+		// Check if the address is an IP address
+		if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+			// Check if the IP address is an IPv4 address
+			if ipnet.IP.To4() != nil && ipnet.IP.IsGlobalUnicast() {
+				// Print the local URL
+				fmt.Printf("🔗 Local URL: http://%v:8080\n", ipnet.IP)
+			}
+		}
+	}
 	err = http.ListenAndServe(":8080", cors(http.DefaultServeMux))
 	if err != nil {
 		panic("ListenAndServeTLS: " + err.Error())
