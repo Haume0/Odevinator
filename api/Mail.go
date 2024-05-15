@@ -14,8 +14,10 @@ func SendVerifyMail(target string, id, code string, name string) {
 
 	if first {
 
-		fmt.Println("\n⚠️ İnternet bağlantısı yoksa kodu öğrenciye siz söylemelisiniz.🌐")
-
+		fmt.Println("\n❗ İnternet bağlantısı yoksa kodu öğrenciye siz söylemelisiniz.🌐")
+		if PASS == "your smtp keyy here" && first {
+			fmt.Println("❗ Mail sistemi kapalı!\n🔑 SMTP bilgilerini .env dosyasına giriniz.")
+		}
 		first = false
 	}
 	fmt.Printf("\r")

@@ -1,1 +1,0 @@
-cmd /K odevleyici.exe --global
