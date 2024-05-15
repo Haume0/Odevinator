@@ -221,11 +221,11 @@ export function Duzenle() {
       {odevler.length >0 && (
         <For each={odevler}>
           {(odev:any,index) => (
-            <div class=" relative aspect-square w-[calc(50%-0.5rem)] flex flex-col gap-1">
-            <div class="w-full relative min-h-full items-center gap-2 justify-center bg-white rounded-xl flex flex-col">
+            <div class=" relative w-[calc(50%-0.5rem)] flex flex-col gap-1">
+            <div class="w-full relative h-full items-center p-2 gap-2 justify-center bg-white rounded-xl flex flex-col">
               <Icon name="folder" class="size-16" />
-              <span class="font-medium text-center break-words w-full px-4 leading-4">{odev.name}</span>
-              <span class="text-xs absolute right-2 bottom-2">{odev.lesson}</span>
+              <span class="font-medium text-sm md:text-base text-center break-words w-full px-4 leading-4">{odev.name}</span>
+              <span class="text-xs">{odev.lesson}</span>
             </div>
             <A href={`/duzenle/${index()}`} class="w-full items-center justify-center flex bg-blue-500 active:scale-[0.96] ease-in-out duration-100 !outline-none text-white py-2 text-sm rounded-lg">
               Düzenle
