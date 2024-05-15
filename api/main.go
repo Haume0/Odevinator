@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net"
@@ -10,8 +11,6 @@ import (
 	"os/exec"
 	"regexp"
 	"strings"
-
-	"github.com/joho/godotenv"
 )
 
 // ENV VARS
@@ -40,15 +39,20 @@ func main() {
 	if input == "yes" {
 		os.Args = append(os.Args, "--global")
 	}
-	// ENV VARS
-	err := godotenv.Load(".env")
+	configJSON, err := os.ReadFile("config.json")
 	if err != nil {
-		fmt.Print("!!!Error loading .env file!!!")
-		return
+		fmt.Println("config.json dosyası bulunamadı.")
+		os.Exit(1)
 	}
-	PASS = os.Getenv("PASS")
-	MAIL = os.Getenv("MAIL")
-	OKUL_SUFFIX = os.Getenv("OKUL_SUFFIX")
+	var config map[string]interface{}
+	err = json.Unmarshal(configJSON, &config)
+	if err != nil {
+		fmt.Println("config.json dosyası okunamadı.")
+		os.Exit(1)
+	}
+	PASS = config["PASS"].(string)
+	MAIL = config["MAIL"].(string)
+	OKUL_SUFFIX = config["OKUL_SUFFIX"].(string)
 	// MAIN
 	// devmode env logging
 	if os.Args[len(os.Args)-1] == "--dev" {
