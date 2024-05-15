@@ -1,6 +1,6 @@
 ## Mail Sistemi Hakkında
 Mail sistemini kullanmak istiyorsanız Google Mail üzerinden kendi uygulama şifrenizi almalısınız. 
-Sonrasında.env dosyasına yazmalısınız, aksi takdirde kod mail yollamaz kodları sizin söylemeniz gerekir.
+Sonrasında config.json dosyasına yazmalısınız, aksi takdirde kod mail yollamaz kodları sizin söylemeniz gerekir.
 
 (!)Global URL yes yazarsanız sistem üretsiz bir tünelleme servisi ile internette yayınlanır.
 
