@@ -83,7 +83,6 @@ export function Login() {
               type="text"
               class={`bg-white h-12 rounded-xl w-full text-center px-2 py-2 outline-none focus:!border-blue-500 border-2 border-transparent ease-in-out duration-200`}
               placeholder="İsminiz"
-              inputMode="numeric"
               value={input().name}
               onInput={(e) => setInput({ ...input(), name: e.target.value })}
             />
