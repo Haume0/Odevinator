@@ -212,7 +212,8 @@ export function Duzenle() {
     )
       .then((res) => res.json())
       .then((data) => {
-        setOdevler(data);console.log(data)
+        setOdevler(data);
+        // console.log(data)
       });
   })
   return (
@@ -249,7 +250,10 @@ export function DuzenleOdev() {
   const [_, setProgress] = useProgress()
   const [user] = useUser()
   // const navigate = useNavigate()
-  console.log(index);
+  // console.log(index);
+  createEffect(() => {
+    
+  })
   let oldValues = odevler[index]
   const [input, setInput] = createSignal<IEdit>({newFiles:[],removeFiles:[],files: [], lesson: "", name: ""});
   function handleSumbit(e: any) {
@@ -306,14 +310,17 @@ createEffect(() => {
     .then((res) => res.json())
     .then((data) => {
       setOdevler(data);
-      console.log(data);
+      // console.log(data);
       // @ts-ignore
       oldValues = odevler[index];
       setInput({
         ...input(),
         ...odevler[index],
-        files: odevler[index].files.map((file) => file.name), // Convert IFile objects to strings
+        //@ts-ignore
+        files: odevler[index].files.map((file) => file), // Convert IFile objects to strings
       });
+      console.log(input());
+      
     });
 });
   return (

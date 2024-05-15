@@ -99,7 +99,7 @@ func New(w http.ResponseWriter, r *http.Request) {
 	}
 	odevFiles := r.MultipartForm.File["files"]
 	ogrID := r.FormValue("ogr_id")
-	ogrName := r.FormValue("ogr_name")
+	// ogrName := r.FormValue("ogr_name")
 	ogrCode := r.FormValue("ogr_code")
 	homeworkLesson := r.FormValue("homework_lesson")
 	homeworkName := r.FormValue("homework_name")
@@ -131,7 +131,7 @@ func New(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	dirName := fmt.Sprintf("./Odevler/%v_%v_%v_%v", ogrID, ogrName, homeworkLesson, homeworkName)
+	dirName := fmt.Sprintf("./Odevler/%v_%v_%v", ogrID, homeworkLesson, homeworkName)
 	//check Odevler directory exists
 	if _, err := os.Stat(dirName); os.IsNotExist(err) {
 		//create directory
