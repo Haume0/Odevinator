@@ -21,7 +21,8 @@ func SendVerifyMail(target string, id, code string, name string) {
 		first = false
 	}
 	fmt.Printf("\r")
-	fmt.Printf("\n💯 %v • %v: ✅ %v ✅", id, name, code)
+	fmt.Println("")
+	fmt.Printf("\n💯 %v • %v: 🔑 %v 🔑", id, name, code)
 	if PASS == "your smtp keyy here" {
 		return
 	}

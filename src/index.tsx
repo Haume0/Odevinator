@@ -7,6 +7,7 @@ import {Login, LoginLayout} from './Login'
 import { Route, Router } from '@solidjs/router'
 import { createEffect, onMount } from 'solid-js'
 import { useUser } from './Store'
+import QR from './QR'
 const [user,setUser] = useUser()
 onMount(() => {
   const user = sessionStorage.getItem('user')
@@ -29,6 +30,7 @@ render(() => (
     <Route path="/login" component={LoginLayout}>
       <Route path="" component={Login} />
     </Route>
+    <Route path="/qr" component={QR} />
    </Router>
   </>
 ), root!)

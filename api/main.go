@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -84,8 +85,6 @@ func main() {
 	PASS = config["PASS"].(string)
 	MAIL = config["MAIL"].(string)
 	OKUL_SUFFIX = config["OKUL_SUFFIX"].(string)
-	// MAIN
-	fmt.Print(PASS, MAIL, OKUL_SUFFIX)
 	// devmode env logging
 	if os.Args[len(os.Args)-1] == "--dev" {
 		fmt.Printf(`
@@ -128,6 +127,7 @@ func main() {
 		}
 	})
 
+	var allLinks = []string{}
 	// If --global flag is set, create a tunnel and get the global URL
 	if os.Args[len(os.Args)-1] == "--global" {
 		go func() {
@@ -153,8 +153,21 @@ func main() {
 				var globalUrl = strings.Replace(scanner.Text(), "Forwarding HTTP traffic from ", "", 1)
 				// Print the global URL
 				fmt.Println("")
+				allLinks = append(allLinks, globalUrl)
 				fmt.Printf("🌐 Global URL: %v\n", globalUrl)
 				//clearing all cli styling
+				var qrLink = "http://localhost:8080/qr"
+				for i, link := range allLinks {
+					if i == 0 {
+						qrLink = qrLink + "?" + strconv.Itoa(i) + "=" + link
+					} else {
+						qrLink = qrLink + "&" + strconv.Itoa(i) + "=" + link
+					}
+				}
+				fmt.Println("")
+				fmt.Printf("\r")
+				fmt.Printf("\033[0m") // ANSI renk kodlarını sıfırla
+				fmt.Printf("🏁 QR Kodlar: %v\n", qrLink)
 				fmt.Printf("\033[0m") // ANSI renk kodlarını sıfırla
 				fmt.Printf("\r")      // Satırı temizle
 				break
@@ -170,8 +183,11 @@ func main() {
 🚀 Hazırız, aşağıdaki bağlantıyı öğrenciler
 ile paylaşabilirsiniz.
 
-⚠️ UYARI: AYNI WI-FI AĞINA BAĞLI OLMALISINIZ 🛜
+🛜  UYARI: Bu ikona sahip baglantılar için
+aynı ağa bağlı olamlısınız!
+🌐 Bu ikona sahip baglantılar ise internet üzerinden erişilebilir.
 `)
+	fmt.Println("")
 	//get local router network ip adress ethernet and wifi and print them like 🔗 http://adress:8080
 	// Get the local IP address of the machine
 	addrs, err := net.InterfaceAddrs()
@@ -185,10 +201,12 @@ ile paylaşabilirsiniz.
 			// Check if the IP address is an IPv4 address
 			if ipnet.IP.To4() != nil && ipnet.IP.IsGlobalUnicast() {
 				// Print the local URL
-				fmt.Printf("🔗 Local URL: http://%v:8080\n", ipnet.IP)
+				allLinks = append(allLinks, fmt.Sprintf("http://%v:8080", ipnet.IP))
+				fmt.Printf("🛜  Local URL: http://%v:8080\n", ipnet.IP)
 			}
 		}
 	}
+
 	err = http.ListenAndServe(":8080", cors(http.DefaultServeMux))
 	if err != nil {
 		panic("ListenAndServeTLS: " + err.Error())

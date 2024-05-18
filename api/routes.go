@@ -44,13 +44,16 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Printf("Error at unmarshall json: %v\n", err.Error())
 	}
-	//if the id is already in the file, return
+	//if the id is already in the file, remove old ones and create new one
 	for _, v := range auth {
 		if v.ID == id {
-			fmt.Printf("\r")
-			fmt.Printf("\n💯 %v • %v: ✅ %v ✅ ❗Kayıtlı öğrenci!", id, name, v.Code)
-			fmt.Fprintf(w, "exists")
-			return
+			//remove old ones
+			for i, v := range auth {
+				if v.ID == id {
+					auth = append(auth[:i], auth[i+1:]...)
+				}
+			}
+			break
 		}
 	}
 	auth = append(auth, Auth{ID: id, Code: code}) // Assign the result of append to 'auth'
