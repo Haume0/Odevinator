@@ -11,7 +11,6 @@ import (
 	"os/exec"
 	"regexp"
 	"strconv"
-	"strings"
 )
 
 // ENV VARS
@@ -125,7 +124,7 @@ func main() {
 			// -R flag specifies the remote port forwarding
 			// 80:localhost:8080 maps port 80 on serveo.net to port 8080 on the local machine
 			// serveo.net is a free tunnel service
-			cmd := exec.Command("ssh", "-R", "80:localhost:8080", "serveo.net")
+			cmd := exec.Command("ssh", "-R", "80:localhost:8080", "nokey@localhost.run")
 			// Discard the standard error output of the command
 			cmd.Stderr = io.Discard
 			// Get the standard output of the command
@@ -139,27 +138,33 @@ func main() {
 			for scanner.Scan() {
 				// Replace the prefix "Forwarding HTTP traffic from " with an empty string
 				// to get the global URL
-				var globalUrl = strings.Replace(scanner.Text(), "Forwarding HTTP traffic from ", "", 1)
-				// Print the global URL
-				fmt.Println("")
-				allLinks = append(allLinks, globalUrl)
-				fmt.Printf("🌐 Global URL: %v\n", globalUrl)
-				//clearing all cli styling
-				var qrLink = "http://localhost:8080/qr"
-				for i, link := range allLinks {
-					if i == 0 {
-						qrLink = qrLink + "?" + strconv.Itoa(i) + "=" + link
-					} else {
-						qrLink = qrLink + "&" + strconv.Itoa(i) + "=" + link
+				//regex for global url  https://4f84672b874728.lhr.life
+				urlRegex := regexp.MustCompile(`https://[a-zA-Z0-9-]+\.lhr\.life`)
+				globalUrl := urlRegex.FindString(scanner.Text())
+				if globalUrl != "" {
+					// Print the global URL
+					fmt.Println("")
+					allLinks = append(allLinks, globalUrl)
+					fmt.Printf("🌐 Global URL: %v\n", globalUrl)
+					// Clearing all cli styling
+					var qrLink = "http://localhost:8080/qr"
+					for i, link := range allLinks {
+						if i == 0 {
+							qrLink = qrLink + "?" + strconv.Itoa(i) + "=" + link
+						} else {
+							qrLink = qrLink + "&" + strconv.Itoa(i) + "=" + link
+						}
 					}
+					fmt.Println("")
+					fmt.Printf("\r")
+					fmt.Printf("\033[0m") // ANSI renk kodlarını sıfırla
+					fmt.Printf("🏁 QR Kodlar: %v\n", qrLink)
+					fmt.Printf("\033[0m") // ANSI renk kodlarını sıfırla
+					fmt.Printf("\r")      // Satırı temizle
+					break
+				} else {
+					fmt.Println("Hata: Global URL bulunamadı.")
 				}
-				fmt.Println("")
-				fmt.Printf("\r")
-				fmt.Printf("\033[0m") // ANSI renk kodlarını sıfırla
-				fmt.Printf("🏁 QR Kodlar: %v\n", qrLink)
-				fmt.Printf("\033[0m") // ANSI renk kodlarını sıfırla
-				fmt.Printf("\r")      // Satırı temizle
-				break
 			}
 			// Wait for the command to finish
 			cmd.Wait()
