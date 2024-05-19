@@ -29,37 +29,6 @@ type Student struct {
 	ClientID string `json:"client_id"`
 }
 
-// func main() {
-//     // Uygulamanın çalışma dizinini alın
-//     cwd, err := os.Getwd()
-//     if err != nil {
-//         fmt.Println("Çalışma dizini alınamadı:", err)
-//         os.Exit(1)
-//     }
-//     fmt.Println("Uygulama dizini:", cwd)
-
-//     // Config dosyasının yolunu oluşturun
-//     configPath := filepath.Join(cwd, "config.json")
-//     fmt.Println("Config dosya yolu:", configPath)
-
-//     // Config dosyasının varlığını kontrol edin
-//     _, err = os.Stat(configPath)
-//     if os.IsNotExist(err) {
-//         fmt.Println("config.json dosyası bulunamadı.")
-//         os.Exit(1)
-//     }
-
-//     // Config dosyasını okuyun
-//     configJSON, err := os.ReadFile(configPath)
-//     if err != nil {
-//         fmt.Println("config.json dosyası okunamadı:", err)
-//         os.Exit(1)
-//     }
-
-//     fmt.Println("config.json dosyası başarıyla okundu.")
-//     // Gerekli işlemleri yapın
-// }
-
 func main() {
 	var input string
 	//get input from user
@@ -85,6 +54,26 @@ func main() {
 	PASS = config["PASS"].(string)
 	MAIL = config["MAIL"].(string)
 	OKUL_SUFFIX = config["OKUL_SUFFIX"].(string)
+	//remove the auth.json file if it exists and create a new one
+	if _, err := os.Stat("./auth.json"); os.IsNotExist(err) {
+		//create file with {} in it
+		file, err := os.Create("./auth.json")
+		if err != nil {
+			fmt.Printf("Error creating file: %v\n", err.Error())
+		}
+		defer file.Close()
+		file.WriteString("[]")
+	} else {
+		os.Remove("./auth.json")
+		//create file with {} in it
+		file, err := os.Create("./auth.json")
+		if err != nil {
+			fmt.Printf("Error creating file: %v\n", err.Error())
+		}
+		defer file.Close()
+		file.WriteString("[]")
+
+	}
 	// devmode env logging
 	if os.Args[len(os.Args)-1] == "--dev" {
 		fmt.Printf(`

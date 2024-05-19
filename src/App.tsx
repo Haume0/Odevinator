@@ -104,7 +104,12 @@ export function App() {
 
     xhr.onload = function () {
       if (xhr.status == 200) {
-        alert("Ödev başarıyla yüklendi.");
+        if(xhr.responseText != "verified"){
+          alert("Kullanıcı doğrulanamadı. Lütfen tekrar giriş yapın.");
+          setProgress({ state: false, value: 0 });
+        }else{
+          alert("Ödev başarıyla yüklendi.");
+        }
       } else {
         alert("Bir hata oluştu.");
       }
@@ -210,7 +215,7 @@ export function Duzenle() {
     fetch(
       `/odevler?ogr_id=${user.id}&ogr_code=${user.code}`
     )
-      .then((res) => res.json())
+      .then((res) =>  res.json())
       .then((data) => {
         setOdevler(data);
         // console.log(data)
@@ -218,7 +223,7 @@ export function Duzenle() {
   })
   return (
     <div class="w-full h-max flex flex-wrap gap-2">
-      {odevler.length >0 && (
+      {odevler.length >0 ? (
         <For each={odevler}>
           {(odev:any,index) => (
             <div class=" relative w-[calc(50%-0.5rem)] flex flex-col gap-1">
@@ -233,6 +238,8 @@ export function Duzenle() {
           </div>
           )}
         </For>
+      ):(
+        <span class="text-center w-full">Henüz yüklenmiş bir ödevin yok.</span>
       )}
     </div>
   );
@@ -283,7 +290,12 @@ export function DuzenleOdev() {
 
     xhr.onload = function () {
       if (xhr.status == 200) {
-        alert("Ödev başarıyla düzenlendi.");
+        if(xhr.responseText != "verified"){
+          alert("Kullanıcı doğrulanamadı. Lütfen tekrar giriş yapın.");
+          setProgress({ state: false, value: 0 });
+        }else{
+          alert("Ödev başarıyla düzenlendi.");
+        }
       } else {
         alert("Bir hata oluştu.");
       }
@@ -291,7 +303,6 @@ export function DuzenleOdev() {
       window.location.reload()
       // navigate('/duzenle')
     };
-
     xhr.onerror = function () {
       alert("Bir hata oluştu.");
       setProgress({ state: false, value: 0 });

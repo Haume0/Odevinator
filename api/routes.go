@@ -15,6 +15,40 @@ type Auth struct {
 	Code string `json:"code"`
 }
 
+func AuthCheck(id string, code string, w http.ResponseWriter, r *http.Request) bool {
+	if _, err := os.Stat("./auth.json"); os.IsNotExist(err) {
+		//create file with {} in it
+		file, err := os.Create("./auth.json")
+		if err != nil {
+			fmt.Printf("Error creating file: %v\n", err.Error())
+		}
+		defer file.Close()
+		file.WriteString("[]")
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return false
+	}
+	authData, err := os.ReadFile("./auth.json")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return false
+	}
+	var auth []Auth
+	err = json.Unmarshal(authData, &auth)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return false
+	}
+	var authResult bool = false
+	//check id and code is correct
+	for _, v := range auth {
+		if v.ID == id && v.Code == code {
+			// verified
+			authResult = true
+			break
+		}
+	}
+	return authResult
+}
 func Login(w http.ResponseWriter, r *http.Request) {
 	//Getting query parameters from the request */login?id=2314716027
 	id := r.URL.Query().Get("id")
@@ -24,15 +58,6 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var code = GenerateVerifyCode()
-	if _, err := os.Stat("./auth.json"); os.IsNotExist(err) {
-		//create file with {} in it
-		file, err := os.Create("./auth.json")
-		if err != nil {
-			fmt.Printf("Error creating file: %v\n", err.Error())
-		}
-		defer file.Close()
-		file.WriteString("[]")
-	}
 	//reading file
 	authData, err := os.ReadFile("./auth.json")
 	if err != nil {
@@ -44,16 +69,13 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Printf("Error at unmarshall json: %v\n", err.Error())
 	}
-	//if the id is already in the file, remove old ones and create new one
+	//if the id is already in the file, return
 	for _, v := range auth {
 		if v.ID == id {
-			//remove old ones
-			for i, v := range auth {
-				if v.ID == id {
-					auth = append(auth[:i], auth[i+1:]...)
-				}
-			}
-			break
+			fmt.Printf("\r")
+			fmt.Printf("\n💯 %v • %v: 🔑 %v 🔑 💢Zaten kayıtlı!", id, name, v.Code)
+			fmt.Fprintf(w, "exists")
+			return
 		}
 	}
 	auth = append(auth, Auth{ID: id, Code: code}) // Assign the result of append to 'auth'
@@ -74,25 +96,12 @@ func Login(w http.ResponseWriter, r *http.Request) {
 func Verify(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
 	code := r.URL.Query().Get("code")
-	//reading file
-	authData, err := os.ReadFile("./auth.json")
-	if err != nil {
-		fmt.Printf("Error reading file: %v\n", err.Error())
+	if !AuthCheck(id, code, w, r) {
+		http.Error(w, "not verified", http.StatusUnauthorized)
+		return
+	} else {
+		fmt.Fprint(w, "verified")
 	}
-	var auth []Auth
-	//unmarshal the json data
-	err = json.Unmarshal(authData, &auth)
-	if err != nil {
-		fmt.Printf("Error at unmarshall json: %v\n", err.Error())
-	}
-	//check the code is correct
-	for _, v := range auth {
-		if v.ID == id && v.Code == code {
-			fmt.Fprintf(w, "verified")
-			return
-		}
-	}
-	fmt.Fprintf(w, "not verified")
 }
 func New(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseMultipartForm(64 * 1024 * 1024)
@@ -102,37 +111,15 @@ func New(w http.ResponseWriter, r *http.Request) {
 	}
 	odevFiles := r.MultipartForm.File["files"]
 	ogrID := r.FormValue("ogr_id")
-	// ogrName := r.FormValue("ogr_name")
 	ogrCode := r.FormValue("ogr_code")
 	homeworkLesson := r.FormValue("homework_lesson")
 	homeworkName := r.FormValue("homework_name")
-	if _, err := os.Stat("./auth.json"); os.IsNotExist(err) {
-		//create file with {} in it
-		file, err := os.Create("./auth.json")
-		if err != nil {
-			fmt.Printf("Error creating file: %v\n", err.Error())
-		}
-		defer file.Close()
-		file.WriteString("[]")
-	}
-	authData, err := os.ReadFile("./auth.json")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+
+	if !AuthCheck(ogrID, ogrCode, w, r) {
+		http.Error(w, "not verified", http.StatusUnauthorized)
 		return
-	}
-	var auth []Auth
-	err = json.Unmarshal(authData, &auth)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	for _, v := range auth {
-		if v.ID == ogrID && v.Code == ogrCode {
-			break
-		} else {
-			http.Error(w, "not verified", http.StatusUnauthorized)
-			return
-		}
+	} else {
+		fmt.Fprintf(w, "verified")
 	}
 	dirName := fmt.Sprintf("./Odevler/%v_%v_%v", ogrID, homeworkLesson, homeworkName)
 	//check Odevler directory exists
@@ -170,41 +157,16 @@ func Odevler(w http.ResponseWriter, r *http.Request) {
 	ogrID := r.URL.Query().Get("ogr_id")
 	ogrCode := r.URL.Query().Get("ogr_code")
 
-	if _, err := os.Stat("./auth.json"); os.IsNotExist(err) {
-		//create file with {} in it
-		file, err := os.Create("./auth.json")
-		if err != nil {
-			fmt.Printf("Error creating file: %v\n", err.Error())
-		}
-		defer file.Close()
-		file.WriteString("[]")
-	}
-	authData, err := os.ReadFile("./auth.json")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	if !AuthCheck(ogrID, ogrCode, w, r) {
+		http.Error(w, "not verified", http.StatusUnauthorized)
 		return
+	} else {
 	}
-	var auth []Auth
-	err = json.Unmarshal(authData, &auth)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	for _, v := range auth {
-		if v.ID == ogrID && v.Code == ogrCode {
-			break
-		} else {
-			http.Error(w, "not verified", http.StatusUnauthorized)
-			return
-		}
-	}
-
 	//header json
 	w.Header().Set("Content-Type", "application/json")
-
 	// List all files in the "Odevler" directory and its subdirectories
 	fileList := []string{}
-	err = filepath.Walk("./Odevler", func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk("./Odevler", func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -227,18 +189,6 @@ func Odevler(w http.ResponseWriter, r *http.Request) {
 		// remove duplicates
 		odevList = removeDuplicates(odevList)
 	}
-	/*
-		[
-			{
-				"lesson": "vektör",
-				"name":"pal",
-				files:[
-					"pal1.pdf",
-					"pal2.pdf"
-				]
-			}
-		]
-	*/
 	type Odev struct {
 		Lesson string   `json:"lesson"`
 		Name   string   `json:"name"`
@@ -290,33 +240,12 @@ func Edit(w http.ResponseWriter, r *http.Request) {
 	homeworkLesson = strings.ReplaceAll(homeworkLesson, "/", "")
 	homeworkName = strings.ReplaceAll(homeworkName, "/", "")
 	removeFiles = strings.ReplaceAll(removeFiles, "/", "")
-	if _, err := os.Stat("./auth.json"); os.IsNotExist(err) {
-		//create file with {} in it
-		file, err := os.Create("./auth.json")
-		if err != nil {
-			fmt.Printf("Error creating file: %v\n", err.Error())
-		}
-		defer file.Close()
-		file.WriteString("[]")
-	}
-	authData, err := os.ReadFile("./auth.json")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+
+	if !AuthCheck(ogrID, ogrCode, w, r) {
+		http.Error(w, "not verified", http.StatusUnauthorized)
 		return
-	}
-	var auth []Auth
-	err = json.Unmarshal(authData, &auth)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	for _, v := range auth {
-		if v.ID == ogrID && v.Code == ogrCode {
-			break
-		} else {
-			http.Error(w, "not verified", http.StatusUnauthorized)
-			return
-		}
+	} else {
+		fmt.Fprintf(w, "verified")
 	}
 	//remove files from the directory if removeFiles is not empty
 	oldDirName := fmt.Sprintf("./Odevler/%v_%v_%v", ogrID, oldHomeworkLesson, oldHomeworkName)
