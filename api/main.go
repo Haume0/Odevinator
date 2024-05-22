@@ -200,6 +200,20 @@ aynı ağa bağlı olamlısınız!
 			}
 		}
 	}
+	if os.Args[len(os.Args)-1] != "--global" {
+		var qrLink = "http://localhost:8080/qr"
+		for i, link := range allLinks {
+			if i == 0 {
+				qrLink = qrLink + "?" + strconv.Itoa(i) + "=" + link
+			} else {
+				qrLink = qrLink + "&" + strconv.Itoa(i) + "=" + link
+			}
+		}
+		fmt.Println("")
+		fmt.Printf("\r")
+		fmt.Printf("\033[0m") // ANSI renk kodlarını sıfırla
+		fmt.Printf("🏁 QR Kodlar: %v\n", qrLink)
+	}
 
 	err = http.ListenAndServe(":8080", cors(http.DefaultServeMux))
 	if err != nil {
